@@ -122,6 +122,6 @@ export async function POST(request) {
     return NextResponse.json({ success: true, id: insertedId });
   } catch (error) {
     console.error("Error processing submission:", error);
-    return NextResponse.json({ error: "Failed to process submission" }, { status: 500 });
+    return NextResponse.json({ error: error.message || "Failed to process submission" }, { status: 500 });
   }
 }

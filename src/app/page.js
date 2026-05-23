@@ -154,11 +154,12 @@ export default function DigitalForm() {
         setIsSuccess(true);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
-        alert("Failed to submit form. Please try again.");
+        const errData = await response.json().catch(() => ({}));
+        alert(`Failed to submit form. Error: ${errData.error || response.statusText}`);
       }
     } catch (error) {
       console.error(error);
-      alert("An error occurred. Please try again.");
+      alert(`An error occurred: ${error.message}`);
     } finally {
       setIsSubmitting(false);
     }
