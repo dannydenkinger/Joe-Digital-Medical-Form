@@ -6,6 +6,68 @@ import { CheckCircle2, User, FileText, AlertTriangle, Stethoscope, FileSignature
 
 const SignatureCanvas = dynamic(() => import('react-signature-canvas'), { ssr: false });
 
+const RadioGroup = ({ label, name, options, value, onChange }) => (
+  <div className="space-y-3">
+    <label className="block text-sm font-semibold text-slate-700">{label}</label>
+    <div className="flex flex-wrap gap-3">
+      {options.map((opt) => (
+        <label key={opt} className={`flex items-center justify-center px-6 py-4 border-2 rounded-xl cursor-pointer transition-all ${value === opt ? 'bg-blue-50 border-blue-600 text-blue-700 font-medium' : 'border-slate-200 text-slate-600 hover:border-blue-300'}`}>
+          <input
+            type="radio"
+            name={name}
+            value={opt}
+            checked={value === opt}
+            onChange={onChange}
+            className="sr-only"
+          />
+          {opt}
+        </label>
+      ))}
+    </div>
+  </div>
+);
+
+const CheckboxGroup = ({ label, name, options, values = [], onChange }) => (
+  <div className="space-y-3">
+    <label className="block text-sm font-semibold text-slate-700">{label}</label>
+    <div className="flex flex-wrap gap-3">
+      {options.map((opt) => {
+        const isChecked = values.includes(opt);
+        return (
+          <label key={opt} className={`flex items-center justify-center px-6 py-4 border-2 rounded-xl cursor-pointer transition-all ${isChecked ? 'bg-blue-50 border-blue-600 text-blue-700 font-medium' : 'border-slate-200 text-slate-600 hover:border-blue-300'}`}>
+            <input
+              type="checkbox"
+              name={name}
+              value={opt}
+              checked={isChecked}
+              onChange={onChange}
+              className="sr-only"
+            />
+            {opt}
+          </label>
+        )
+      })}
+    </div>
+  </div>
+);
+
+const InputField = ({ label, name, type = "text", placeholder = "", required = false, className = "", value, onChange }) => (
+  <div className={`space-y-1 ${className}`}>
+    <label className="block text-sm font-semibold text-slate-700">
+      {label} {required && <span className="text-red-500">*</span>}
+    </label>
+    <input
+      type={type}
+      name={name}
+      value={value}
+      onChange={onChange}
+      required={required}
+      placeholder={placeholder}
+      className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all text-slate-800 text-lg"
+    />
+  </div>
+);
+
 export default function DigitalForm() {
   const [formData, setFormData] = useState({
     patientName: '',
@@ -158,68 +220,6 @@ export default function DigitalForm() {
     );
   }
 
-  const RadioGroup = ({ label, name, options }) => (
-    <div className="space-y-3">
-      <label className="block text-sm font-semibold text-slate-700">{label}</label>
-      <div className="flex flex-wrap gap-3">
-        {options.map((opt) => (
-          <label key={opt} className={`flex items-center justify-center px-6 py-4 border-2 rounded-xl cursor-pointer transition-all ${formData[name] === opt ? 'bg-blue-50 border-blue-600 text-blue-700 font-medium' : 'border-slate-200 text-slate-600 hover:border-blue-300'}`}>
-            <input
-              type="radio"
-              name={name}
-              value={opt}
-              checked={formData[name] === opt}
-              onChange={handleInputChange}
-              className="sr-only"
-            />
-            {opt}
-          </label>
-        ))}
-      </div>
-    </div>
-  );
-
-  const CheckboxGroup = ({ label, name, options }) => (
-    <div className="space-y-3">
-      <label className="block text-sm font-semibold text-slate-700">{label}</label>
-      <div className="flex flex-wrap gap-3">
-        {options.map((opt) => {
-          const isChecked = formData[name].includes(opt);
-          return (
-            <label key={opt} className={`flex items-center justify-center px-6 py-4 border-2 rounded-xl cursor-pointer transition-all ${isChecked ? 'bg-blue-50 border-blue-600 text-blue-700 font-medium' : 'border-slate-200 text-slate-600 hover:border-blue-300'}`}>
-              <input
-                type="checkbox"
-                name={name}
-                value={opt}
-                checked={isChecked}
-                onChange={handleInputChange}
-                className="sr-only"
-              />
-              {opt}
-            </label>
-          )
-        })}
-      </div>
-    </div>
-  );
-
-  const InputField = ({ label, name, type = "text", placeholder = "", required = false, className = "" }) => (
-    <div className={`space-y-1 ${className}`}>
-      <label className="block text-sm font-semibold text-slate-700">
-        {label} {required && <span className="text-red-500">*</span>}
-      </label>
-      <input
-        type={type}
-        name={name}
-        value={formData[name]}
-        onChange={handleInputChange}
-        required={required}
-        placeholder={placeholder}
-        className="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 outline-none transition-all text-slate-800 text-lg"
-      />
-    </div>
-  );
-
   return (
     <div className="min-h-screen bg-slate-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
@@ -245,22 +245,22 @@ export default function DigitalForm() {
                 <h2 className="text-2xl font-bold text-slate-800">Patient Information</h2>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <InputField label="Patient Name" name="patientName" required />
-                <InputField label="Date" name="date" type="date" required />
+                <InputField label="Patient Name" name="patientName" value={formData.patientName} onChange={handleInputChange} required />
+                <InputField label="Date" name="date" type="date" value={formData.date} onChange={handleInputChange} required />
               </div>
-              <InputField label="Address" name="address" required />
+              <InputField label="Address" name="address" value={formData.address} onChange={handleInputChange} required />
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <InputField label="City" name="city" required />
-                <InputField label="State" name="state" required />
-                <InputField label="Zip Code" name="zip" required />
+                <InputField label="City" name="city" value={formData.city} onChange={handleInputChange} required />
+                <InputField label="State" name="state" value={formData.state} onChange={handleInputChange} required />
+                <InputField label="Zip Code" name="zip" value={formData.zip} onChange={handleInputChange} required />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <InputField label="Team and Player #" name="teamAndPlayerNumber" />
-                <InputField label="Sport" name="sport" />
+                <InputField label="Team and Player #" name="teamAndPlayerNumber" value={formData.teamAndPlayerNumber} onChange={handleInputChange} />
+                <InputField label="Sport" name="sport" value={formData.sport} onChange={handleInputChange} />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <InputField label="Location" name="location" />
-                <InputField label="Time of Injury" name="timeOfInjury" type="time" />
+                <InputField label="Location" name="location" value={formData.location} onChange={handleInputChange} />
+                <InputField label="Time of Injury" name="timeOfInjury" type="time" value={formData.timeOfInjury} onChange={handleInputChange} />
               </div>
             </section>
 
@@ -273,19 +273,23 @@ export default function DigitalForm() {
               <RadioGroup 
                 label="Type of Injury" 
                 name="typeOfInjury" 
-                options={['Concussion', 'Fracture', 'Dislocation', 'Laceration', 'Blunt force', 'Other']} 
+                options={['Concussion', 'Fracture', 'Dislocation', 'Laceration', 'Blunt force', 'Other']}
+                value={formData.typeOfInjury}
+                onChange={handleInputChange}
               />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <InputField label="Area of body injured" name="areaOfBodyInjured" />
-                <InputField label="How injury occurred" name="howInjuryOccurred" />
+                <InputField label="Area of body injured" name="areaOfBodyInjured" value={formData.areaOfBodyInjured} onChange={handleInputChange} />
+                <InputField label="How injury occurred" name="howInjuryOccurred" value={formData.howInjuryOccurred} onChange={handleInputChange} />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <RadioGroup 
                   label="Did patient lose consciousness?" 
                   name="lostConsciousness" 
-                  options={['Y', 'N']} 
+                  options={['Y', 'N']}
+                  value={formData.lostConsciousness}
+                  onChange={handleInputChange}
                 />
-                <InputField label="How long?" name="howLongConscious" />
+                <InputField label="How long?" name="howLongConscious" value={formData.howLongConscious} onChange={handleInputChange} />
               </div>
             </section>
 
@@ -299,7 +303,9 @@ export default function DigitalForm() {
               <CheckboxGroup 
                 label="First aid care given" 
                 name="firstAidCareGiven" 
-                options={['Ice', 'Splint', 'Bleeding control', 'Sling', 'C-Spine stabilization', 'Other']} 
+                options={['Ice', 'Splint', 'Bleeding control', 'Sling', 'C-Spine stabilization', 'Other']}
+                values={formData.firstAidCareGiven}
+                onChange={handleInputChange}
               />
               
               <div className="space-y-1">
@@ -316,42 +322,56 @@ export default function DigitalForm() {
               <CheckboxGroup 
                 label="Equipment used" 
                 name="equipmentUsed" 
-                options={['Ice pack', 'Splint', 'Dressings', 'Gauze', 'Sling', 'AED', 'Oxygen', 'Other']} 
+                options={['Ice pack', 'Splint', 'Dressings', 'Gauze', 'Sling', 'AED', 'Oxygen', 'Other']}
+                values={formData.equipmentUsed}
+                onChange={handleInputChange}
               />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <RadioGroup 
                   label="Did patient return to play?" 
                   name="returnToPlay" 
-                  options={['Y', 'N']} 
+                  options={['Y', 'N']}
+                  value={formData.returnToPlay}
+                  onChange={handleInputChange}
                 />
                 <RadioGroup 
                   label="Advised to seek further evaluation by a physician or medical facility?" 
                   name="advisedFurtherEvaluation" 
-                  options={['Y', 'N']} 
+                  options={['Y', 'N']}
+                  value={formData.advisedFurtherEvaluation}
+                  onChange={handleInputChange}
                 />
                 <RadioGroup 
                   label="Was 9-1-1 called?" 
                   name="called911" 
-                  options={['Y', 'N']} 
+                  options={['Y', 'N']}
+                  value={formData.called911}
+                  onChange={handleInputChange}
                 />
                 <div className="flex flex-col gap-3">
                   <RadioGroup 
                     label="Was patient handed off to EMS?" 
                     name="handedOffToEMS" 
-                    options={['Y', 'N']} 
+                    options={['Y', 'N']}
+                    value={formData.handedOffToEMS}
+                    onChange={handleInputChange}
                   />
-                  <InputField label="Agency" name="emsAgency" />
+                  <InputField label="Agency" name="emsAgency" value={formData.emsAgency} onChange={handleInputChange} />
                 </div>
                 <RadioGroup 
                   label="Was patient transported?" 
                   name="transported" 
-                  options={['Y', 'N']} 
+                  options={['Y', 'N']}
+                  value={formData.transported}
+                  onChange={handleInputChange}
                 />
                 <RadioGroup 
                   label="Transport Method" 
                   name="transportMethod" 
-                  options={['Ambulance', 'Parent', 'Other']} 
+                  options={['Ambulance', 'Parent', 'Other']}
+                  value={formData.transportMethod}
+                  onChange={handleInputChange}
                 />
               </div>
             </section>
@@ -371,14 +391,16 @@ export default function DigitalForm() {
                   <RadioGroup 
                     label="Signature Type" 
                     name="patientParentCoachSignature" 
-                    options={['Patient', 'Parent', 'Coach']} 
+                    options={['Patient', 'Parent', 'Coach']}
+                    value={formData.patientParentCoachSignature}
+                    onChange={handleInputChange}
                   />
-                  <InputField label="Print Name (Patient, Parent or Other)" name="patientParentOtherName" required />
-                  <InputField label="Phone Number" name="phoneNumber" type="tel" required />
+                  <InputField label="Print Name (Patient, Parent or Other)" name="patientParentOtherName" value={formData.patientParentOtherName} onChange={handleInputChange} required />
+                  <InputField label="Phone Number" name="phoneNumber" type="tel" value={formData.phoneNumber} onChange={handleInputChange} required />
                 </div>
                 <div className="space-y-6">
                   <div className="h-20" /> {/* Spacer to align with inputs above */}
-                  <InputField label="EMT Print Name" name="emtName" required />
+                  <InputField label="EMT Print Name" name="emtName" value={formData.emtName} onChange={handleInputChange} required />
                   <div className="space-y-2">
                     <label className="block text-sm font-semibold text-slate-700">EMT Signature <span className="text-red-500">*</span></label>
                     {formData.emtSignature ? (
