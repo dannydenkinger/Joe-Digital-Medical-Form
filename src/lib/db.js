@@ -1,9 +1,18 @@
-import { createClient } from '@vercel/postgres';
+import { Client } from 'pg';
 
 export async function getClient() {
-  const client = createClient({
-    connectionString: process.env.POSTGRES_URL || process.env.POSTGRES_URL_NON_POOLING
+  const connectionString = process.env.POSTGRES_URL || process.env.DATABASE_URL || process.env.PRISMA_DATABASE_URL;
+  
+  if (!connectionString) {
+    throw new Error("Missing database connection string environment variable.");
+  }
+
+  const client = new Client({
+    connectionString,
+    // Add SSL to ensure connection to cloud databases succeeds
+    ssl: { rejectUnauthorized: false }
   });
+
   await client.connect();
   return client;
 }
@@ -11,7 +20,7 @@ export async function getClient() {
 export async function initDb() {
   const client = await getClient();
   try {
-    await client.sql`
+    await client.query(`
       CREATE TABLE IF NOT EXISTS submissions (
         id SERIAL PRIMARY KEY,
         patientName VARCHAR(255),
@@ -46,7 +55,7 @@ export async function initDb() {
         emtName VARCHAR(255),
         createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
-    `;
+    `);
     console.log("Database initialized successfully.");
   } catch (error) {
     console.error("Failed to initialize database:", error);

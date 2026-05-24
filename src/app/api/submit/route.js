@@ -16,7 +16,7 @@ export async function POST(request) {
     
     let insertedId;
     try {
-      const result = await client.sql`
+      const result = await client.query(`
         INSERT INTO submissions (
           patientName, date, address, city, state, zip, teamAndPlayerNumber, sport,
           location, timeOfInjury, typeOfInjury, areaOfBodyInjured, howInjuryOccurred,
@@ -25,15 +25,18 @@ export async function POST(request) {
           transported, transportMethod, patientParentCoachSignature, patientParentOtherName,
           phoneNumber, emtSignature, emtName
         ) VALUES (
-          ${data.patientName}, ${data.date}, ${data.address}, ${data.city}, ${data.state}, ${data.zip}, ${data.teamAndPlayerNumber}, ${data.sport},
-          ${data.location}, ${data.timeOfInjury}, ${data.typeOfInjury}, ${data.areaOfBodyInjured}, ${data.howInjuryOccurred},
-          ${data.lostConsciousness}, ${data.howLongConscious}, ${firstAid}, ${data.comment}, ${equip},
-          ${data.returnToPlay}, ${data.advisedFurtherEvaluation}, ${data.called911}, ${data.handedOffToEMS}, ${data.emsAgency},
-          ${data.transported}, ${data.transportMethod}, ${data.patientParentCoachSignature}, ${data.patientParentOtherName},
-          ${data.phoneNumber}, ${data.emtSignature}, ${data.emtName}
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18,
+          $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30
         )
         RETURNING id
-      `;
+      `, [
+        data.patientName, data.date, data.address, data.city, data.state, data.zip, data.teamAndPlayerNumber, data.sport,
+        data.location, data.timeOfInjury, data.typeOfInjury, data.areaOfBodyInjured, data.howInjuryOccurred,
+        data.lostConsciousness, data.howLongConscious, firstAid, data.comment, equip,
+        data.returnToPlay, data.advisedFurtherEvaluation, data.called911, data.handedOffToEMS, data.emsAgency,
+        data.transported, data.transportMethod, data.patientParentCoachSignature, data.patientParentOtherName,
+        data.phoneNumber, data.emtSignature, data.emtName
+      ]);
       insertedId = result.rows[0]?.id;
     } finally {
       await client.end();

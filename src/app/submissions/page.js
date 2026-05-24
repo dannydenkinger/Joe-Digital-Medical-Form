@@ -11,7 +11,7 @@ export default async function SubmissionsPage() {
   try {
     const client = await getClient();
     try {
-      const { rows } = await client.sql`SELECT * FROM submissions ORDER BY createdAt DESC`;
+      const { rows } = await client.query(`SELECT * FROM submissions ORDER BY id DESC`);
       submissions = rows;
     } finally {
       await client.end();
