@@ -1,8 +1,15 @@
-import { sql } from '@vercel/postgres';
+import { createClient } from '@vercel/postgres';
+
+export async function getClient() {
+  const client = createClient();
+  await client.connect();
+  return client;
+}
 
 export async function initDb() {
+  const client = await getClient();
   try {
-    await sql`
+    await client.sql`
       CREATE TABLE IF NOT EXISTS submissions (
         id SERIAL PRIMARY KEY,
         patientName VARCHAR(255),
@@ -42,7 +49,7 @@ export async function initDb() {
   } catch (error) {
     console.error("Failed to initialize database:", error);
     throw error;
+  } finally {
+    await client.end();
   }
 }
-
-export default sql;

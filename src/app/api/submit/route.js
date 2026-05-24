@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import sql, { initDb } from '@/lib/db';
+import { getClient, initDb } from '@/lib/db';
 import nodemailer from 'nodemailer';
 
 export async function POST(request) {
@@ -12,26 +12,32 @@ export async function POST(request) {
     // 1. Insert into Database
     const firstAid = JSON.stringify(data.firstAidCareGiven || []);
     const equip = JSON.stringify(data.equipmentUsed || []);
+    const client = await getClient();
     
-    const result = await sql`
-      INSERT INTO submissions (
-        patientName, date, address, city, state, zip, teamAndPlayerNumber, sport,
-        location, timeOfInjury, typeOfInjury, areaOfBodyInjured, howInjuryOccurred,
-        lostConsciousness, howLongConscious, firstAidCareGiven, comment, equipmentUsed,
-        returnToPlay, advisedFurtherEvaluation, called911, handedOffToEMS, emsAgency,
-        transported, transportMethod, patientParentCoachSignature, patientParentOtherName,
-        phoneNumber, emtSignature, emtName
-      ) VALUES (
-        ${data.patientName}, ${data.date}, ${data.address}, ${data.city}, ${data.state}, ${data.zip}, ${data.teamAndPlayerNumber}, ${data.sport},
-        ${data.location}, ${data.timeOfInjury}, ${data.typeOfInjury}, ${data.areaOfBodyInjured}, ${data.howInjuryOccurred},
-        ${data.lostConsciousness}, ${data.howLongConscious}, ${firstAid}, ${data.comment}, ${equip},
-        ${data.returnToPlay}, ${data.advisedFurtherEvaluation}, ${data.called911}, ${data.handedOffToEMS}, ${data.emsAgency},
-        ${data.transported}, ${data.transportMethod}, ${data.patientParentCoachSignature}, ${data.patientParentOtherName},
-        ${data.phoneNumber}, ${data.emtSignature}, ${data.emtName}
-      )
-      RETURNING id
-    `;
-    const insertedId = result.rows[0]?.id;
+    let insertedId;
+    try {
+      const result = await client.sql`
+        INSERT INTO submissions (
+          patientName, date, address, city, state, zip, teamAndPlayerNumber, sport,
+          location, timeOfInjury, typeOfInjury, areaOfBodyInjured, howInjuryOccurred,
+          lostConsciousness, howLongConscious, firstAidCareGiven, comment, equipmentUsed,
+          returnToPlay, advisedFurtherEvaluation, called911, handedOffToEMS, emsAgency,
+          transported, transportMethod, patientParentCoachSignature, patientParentOtherName,
+          phoneNumber, emtSignature, emtName
+        ) VALUES (
+          ${data.patientName}, ${data.date}, ${data.address}, ${data.city}, ${data.state}, ${data.zip}, ${data.teamAndPlayerNumber}, ${data.sport},
+          ${data.location}, ${data.timeOfInjury}, ${data.typeOfInjury}, ${data.areaOfBodyInjured}, ${data.howInjuryOccurred},
+          ${data.lostConsciousness}, ${data.howLongConscious}, ${firstAid}, ${data.comment}, ${equip},
+          ${data.returnToPlay}, ${data.advisedFurtherEvaluation}, ${data.called911}, ${data.handedOffToEMS}, ${data.emsAgency},
+          ${data.transported}, ${data.transportMethod}, ${data.patientParentCoachSignature}, ${data.patientParentOtherName},
+          ${data.phoneNumber}, ${data.emtSignature}, ${data.emtName}
+        )
+        RETURNING id
+      `;
+      insertedId = result.rows[0]?.id;
+    } finally {
+      await client.end();
+    }
 
     // 2. Send Email
     // Configure transporter based on env variables.

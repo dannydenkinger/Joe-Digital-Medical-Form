@@ -1,4 +1,4 @@
-import sql, { initDb } from '@/lib/db';
+import { getClient, initDb } from '@/lib/db';
 import SubmissionsList from './SubmissionsList';
 
 // Opt out of caching so it always fetches latest submissions
@@ -9,8 +9,13 @@ export default async function SubmissionsPage() {
   
   let submissions = [];
   try {
-    const { rows } = await sql`SELECT * FROM submissions ORDER BY createdAt DESC`;
-    submissions = rows;
+    const client = await getClient();
+    try {
+      const { rows } = await client.sql`SELECT * FROM submissions ORDER BY createdAt DESC`;
+      submissions = rows;
+    } finally {
+      await client.end();
+    }
   } catch (error) {
     console.error("Failed to fetch submissions:", error);
   }
