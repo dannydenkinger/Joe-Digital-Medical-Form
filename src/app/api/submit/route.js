@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getClient, initDb } from '@/lib/db';
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
 export async function POST(request) {
   try {
@@ -42,24 +42,11 @@ export async function POST(request) {
       await client.end();
     }
 
-    // 2. Send Email
-    // Configure transporter based on env variables.
-    // Recommended: Use Gmail app password or a service like Resend/SendGrid SMTP.
-    const smtpHost = process.env.SMTP_HOST || 'smtp.gmail.com';
-    const smtpPort = process.env.SMTP_PORT || 465;
-    const smtpUser = process.env.SMTP_USER;
-    const smtpPass = process.env.SMTP_PASS;
+    // 2. Send Email using Resend
+    const resendApiKey = process.env.RESEND_API_KEY;
 
-    if (smtpUser && smtpPass) {
-      const transporter = nodemailer.createTransport({
-        host: smtpHost,
-        port: Number(smtpPort),
-        secure: Number(smtpPort) === 465, // true for 465, false for other ports
-        auth: {
-          user: smtpUser,
-          pass: smtpPass,
-        },
-      });
+    if (resendApiKey) {
+      const resend = new Resend(resendApiKey);
 
       // Format email body
       const emailHtml = `
@@ -117,15 +104,21 @@ export async function POST(request) {
         </div>
       `;
 
-      await transporter.sendMail({
-        from: `"Blue Line Medical Services" <${smtpUser}>`,
+      const { data: resendData, error: resendError } = await resend.emails.send({
+        from: 'Blue Line Medical <onboarding@resend.dev>',
         to: 'Josephkoegel16@gmail.com',
         subject: `New Incident Report: ${data.patientName}`,
         html: emailHtml,
       });
-      console.log("Email sent successfully to Josephkoegel16@gmail.com");
+
+      if (resendError) {
+        console.error("Resend API Error:", resendError);
+        throw new Error(resendError.message);
+      }
+
+      console.log("Email sent successfully to Josephkoegel16@gmail.com via Resend. ID:", resendData.id);
     } else {
-      console.warn("Email not sent: SMTP credentials (SMTP_USER, SMTP_PASS) are missing in environment variables.");
+      console.warn("Email not sent: RESEND_API_KEY is missing in environment variables.");
     }
 
     return NextResponse.json({ success: true, id: insertedId });
