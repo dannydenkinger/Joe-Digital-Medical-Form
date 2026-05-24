@@ -1,7 +1,9 @@
 import { createClient } from '@vercel/postgres';
 
 export async function getClient() {
-  const client = createClient();
+  const client = createClient({
+    connectionString: process.env.POSTGRES_URL || process.env.POSTGRES_URL_NON_POOLING
+  });
   await client.connect();
   return client;
 }
